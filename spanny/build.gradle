@@ -1,51 +1,56 @@
 apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
 apply plugin: 'maven-publish'
 
 android {
-    namespace 'com.binaryfork.spanny'
-
     compileSdk 35
-    //buildToolsVersion "22.0.1"
-    resourcePrefix "spanny__"
+    namespace 'com.binaryfork.spanny'
 
     defaultConfig {
         minSdkVersion 26
-        targetSdkVersion 34
+        targetSdk 34
         versionCode 1
-        versionName "1.0.0"
+        versionName "1.0.1"
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
-}
 
-dependencies {
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
-}
-
-task createJar(type: Jar) {
-    // Use the Android source set for the JAR
-    from android.sourceSets.main.java.srcDirs
-    from android.sourceSets.main.res.srcDirs
-    from android.sourceSets.main.jniLibs.srcDirs // Include JNI libraries if needed
-
-    // Set the archive name and version
-    archiveBaseName.set('spanny') // Set the desired name for your JAR
-    archiveVersion.set('1.0.0') // Set the desired version
-    archiveClassifier.set('')
+    publishing {
+        // ✅ Explicitly enable publishing for the release variant
+        singleVariant("release") {
+            withSourcesJar()
+            withJavadocJar()
+        }
+    }
 }
 
 afterEvaluate {
     publishing {
         publications {
-            // Creates a Maven publication called "release".
-            release(MavenPublication) {
-                from components.findByName('release')
+            create("release", MavenPublication) {
+                from components.release // ✅ Ensures it uses the correct release component
+                groupId = 'com.github.sanjayApanchal'
+                artifactId = 'spanny'
+                version = '1.0.1'
             }
         }
     }
 }
 
+dependencies {
+    implementation 'androidx.core:core-ktx:1.12.0'
+}
